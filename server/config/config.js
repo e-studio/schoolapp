@@ -17,7 +17,8 @@ let urlDB;
 if (process.env.NODE_ENV === 'dev') {
   urlDB = 'mongodb://localhost:27017/tigerApp';
 } else {
-urlDB = 'mongodb+srv://schoolapp:HORUgkx7i8L4qLYo@cmstudio-0lz0x.mongodb.net/tigerApp';
+//variable de entorno creada en heroku con:  heroku config:set MONGO_URI="cadena de conexion a la base de datos mongoDB"
+urlDB = process.env.MONGO_URI;
 
 }
 
