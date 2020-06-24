@@ -10,6 +10,20 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 
 
 // ============================
+//  Vencimiento del Token de acceso
+// 60 sec, 60 mins, 24 hrs, 30 dias
+// ============================
+process.env.CADUCIDAD_TOKEN = 60 * 60 * 24 * 30;
+
+
+// ============================
+//  Secret o seed para token
+// ============================
+process.env.SEED = process.env.SEED || 'este=es-el-secret-desarrollo';
+
+
+
+// ============================
 //  Base de datos
 // ============================
 let urlDB;
@@ -23,3 +37,10 @@ urlDB = process.env.MONGO_URI;
 }
 
 process.env.URLDB = urlDB;
+
+
+// ============================
+// google Client ID
+// ============================
+
+process.env.CLIENT_ID = process.env.CLIENT_ID || '859922926901-tqhv61258evs39gcphmn51725bn749lk.apps.googleusercontent.com';

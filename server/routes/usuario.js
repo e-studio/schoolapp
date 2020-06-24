@@ -3,19 +3,23 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const Usuario = require('../models/usuario');
+
+//importamos los middlewares para la verificacion de token y usuario administrador
+const { verificaToken, verificaAdmin_Role } = require('../middlewares/autenticacion');
+
 const app = express();
 
 
-app.get('/usuario', function(req, res) {
+app.get('/usuario', [verificaToken,verificaAdmin_Role], (req, res)=> {
 
     let desde = req.query.desde || 0;
-    let limite = req.query.limite || 5;
+    let limite = req.query.limite || 15;
 
     desde = Number(desde); //parametros para filtrar la cantidad de registros de respuesta
     limite = Number(limite); //  se usa  GET -> localhost:3000/usuario/desde=5&limite=10  devuelve desde el reg 5, 10 registros de respuesta
 
     Usuario.find({ estado: true }, 'nombre email role estado google img') // estado:true sirve para condicionar la busqueda como un WHERE de SQL
-        .skip(desde) // y la cadena  'nombre, email, etc' con los campos que quiero mostrar como select
+        .skip(desde)                                                      // y la cadena  'nombre, email, etc' con los campos que quiero mostrar como select
         .limit(limite)
         .exec((err, usuarios) => {
 
@@ -41,7 +45,7 @@ app.get('/usuario', function(req, res) {
 
 });
 
-app.post('/usuario', function(req, res) {
+app.post('/usuario', [verificaToken, verificaAdmin_Role], function(req, res) {
 
     let body = req.body;
 
@@ -70,7 +74,7 @@ app.post('/usuario', function(req, res) {
 
 
 
-app.put('/usuario/:id', function(req, res) {
+app.put('/usuario/:id', [verificaToken, verificaAdmin_Role], function(req, res) {
 
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
@@ -95,7 +99,7 @@ app.put('/usuario/:id', function(req, res) {
 
 
 
-app.delete('/usuario/:id', function(req, res) {
+app.delete('/usuario/:id', [verificaToken, verificaAdmin_Role], function(req, res) {
 
 
     let id = req.params.id;
