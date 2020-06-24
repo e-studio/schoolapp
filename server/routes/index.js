@@ -4,8 +4,15 @@ const express = require('express');
 const app = express();
 
 
-app.use(require('./usuario.js'));
-app.use(require('./login.js'));
+app.use(require('./usuario'));
+app.use(require('./login'));
+
+app.use(require('./abono'));
+app.use(require('./catalogo'));
+app.use(require('./cliente'));
+app.use(require('./vendedor'));
+//app.use(require('./venta'));
+
 
 
 

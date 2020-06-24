@@ -29,7 +29,7 @@ process.env.SEED = process.env.SEED || 'este=es-el-secret-desarrollo';
 let urlDB;
 
 if (process.env.NODE_ENV === 'dev') {
-  urlDB = 'mongodb://localhost:27017/tigerApp';
+  urlDB = 'mongodb://localhost:27017/ventasU3';
 } else {
 //variable de entorno creada en heroku con:  heroku config:set MONGO_URI="cadena de conexion a la base de datos mongoDB"
 urlDB = process.env.MONGO_URI;
