@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-let {verificaToken} = require('../middlewares/autenticacion.js');
+let { verificaToken, verificaAdmin_Role } = require('../middlewares/autenticacion.js');
 let app = express();
 let Vendedor = require('../models/vendedor.js');
 
@@ -22,27 +22,27 @@ let Vendedor = require('../models/vendedor.js');
 // ========================================
 // Crear nuevo Cliente
 // ========================================
-app.post('/vendedor', verificaToken, (req, res)=>{
-// Regresar la nueva categoria
-// req.usuario._id
-	let body = req.body;
+app.post('/vendedor', [verificaToken, verificaAdmin_Role], (req, res) => {
+    // Regresar la nueva categoria
+    // req.usuario._id
+    let body = req.body;
 
-	let vendedor = new Vendedor({
-		nombre: body.nombre,
+    let vendedor = new Vendedor({
+        nombre: body.nombre,
         apellidos: body.apellidos,
         telefono: body.telefono,
-		email: body.email,
-		password: bcrypt.hashSync(body.password, 10),
-		usuario: req.usuario._id
-	});
+        email: body.email,
+        password: bcrypt.hashSync(body.password, 10),
+        usuario: req.usuario._id
+    });
 
-	vendedor.save((err, vendedorDB) =>{
-		if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    err
-                });
-            }
+    vendedor.save((err, vendedorDB) => {
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            });
+        }
 
         if (!vendedorDB) {
             return res.status(400).json({
@@ -52,12 +52,12 @@ app.post('/vendedor', verificaToken, (req, res)=>{
         }
 
         res.json({
-        	ok:true,
-        	vendedor: vendedorDB
+            ok: true,
+            vendedor: vendedorDB
         });
 
 
-	});
+    });
 
 
 });

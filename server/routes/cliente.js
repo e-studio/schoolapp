@@ -1,8 +1,9 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-let {verificaToken} = require('../middlewares/autenticacion.js');
+let { verificaToken } = require('../middlewares/autenticacion.js');
 let app = express();
 let Cliente = require('../models/cliente.js');
+const cliente = require('../models/cliente.js');
 
 
 // // ========================================
@@ -22,26 +23,28 @@ let Cliente = require('../models/cliente.js');
 // ========================================
 // Crear nuevo Cliente
 // ========================================
-app.post('/cliente', verificaToken, (req, res)=>{
-// Regresar la nueva categoria
-// req.usuario._id
-	let body = req.body;
+app.post('/cliente', verificaToken, (req, res) => {
+    // Regresar la nueva categoria
+    // req.usuario._id
+    let body = req.body;
 
-	let cliente = new Cliente({
-		nombre: body.nombre,
+    let cliente = new Cliente({
+        nombres: body.nombres,
         apellidos: body.apellidos,
-		email: body.email,
-		password: bcrypt.hashSync(body.password, 10),
-		usuario: req.usuario._id
-	});
+        telefono: body.telefono,
+        email: body.email,
+        adeuda: body.adeuda,
+        compras: body.compras,
+        vendedor: body.vendedor
+    });
 
-	cliente.save((err, clienteDB) =>{
-		if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    err
-                });
-            }
+    cliente.save((err, clienteDB) => {
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            });
+        }
 
         if (!clienteDB) {
             return res.status(400).json({
@@ -51,23 +54,195 @@ app.post('/cliente', verificaToken, (req, res)=>{
         }
 
         res.json({
-        	ok:true,
-        	cliente: clienteDB
+            ok: true,
+            cliente: clienteDB
         });
 
 
-	});
+    });
 
 
 });
 
+app.get('/cliente/:idVendedor', verificaToken, (req, res) => {
 
-// // ========================================
-// // Actualizar Clientes por ID
-// // ========================================
-// app.put('/cliente/:id', (req, res)=>{
-// 	//Cliente.findById
-// });
+    let idVendedor = req.params.idVendedor;
+
+    Cliente.find({ vendedor: idVendedor }, '', )
+        .exec((err, clientes) => {
+            if (err) {
+                return res.status(404).json({
+                    ok: false,
+                    err
+                });
+            }
+
+            res.json({
+                ok: true,
+                clientes
+            });
+        });
+});
+
+app.get('/clientes/:idCliente', verificaToken, (req, res) => {
+
+    const idCliente = req.params.idCliente;
+
+    Cliente.findById(idCliente, (err, clienteDB) => {
+
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+
+        if (!clienteDB) {
+            return res.status(404).json({
+                ok: false,
+                error: {
+                    message: 'No se encontró un cliente con ese id'
+                }
+            });
+        }
+
+        res.json({
+            ok: true,
+            clienteDB
+        });
+
+    });
+
+});
+
+app.post('/clientes/multiple', verificaToken, (req, res) => {
+
+    const idClientes = req.body.idClientes;
+
+    Cliente.find({
+        '_id': { $in: idClientes }
+    }, (err, clientesDB) => {
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+
+        if (!clientesDB) {
+            return res.status(404).json({
+                ok: false,
+                error: {
+                    message: 'No se encontraron clientes con esos ids'
+                }
+            });
+        }
+        res.json({
+            ok: true,
+            clientesDB
+        });
+    });
+
+});
+
+// ========================================
+// Actualizar Clientes por ID
+// ========================================
+app.put('/cliente/:idCliente', verificaToken, (req, res) => {
+
+    let id = req.params.idCliente;
+    let body = req.body;
+
+    Cliente.findById(id, (err, clienteDB) => {
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                err
+            });
+        }
+
+        if (!clienteDB) {
+            return res.status(404).json({
+                ok: false,
+                err: {
+                    message: 'El cliente no existe'
+                }
+            });
+        }
+        let comprasNuevas = parseFloat(body.comprasCliente);
+        let comprasActuales = parseFloat(clienteDB.compras);
+
+        let adeudaNueva = parseFloat(body.adeudaCliente);
+        let adeudaActual = parseFloat(clienteDB.adeuda);
+
+        clienteDB.compras = comprasNuevas + comprasActuales;
+        clienteDB.adeuda = adeudaNueva + adeudaActual;
+
+        clienteDB.save((err, clienteGuardado) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    err
+                });
+            }
+
+            res.json({
+                ok: true,
+                clienteGuardado
+            });
+        });
+
+    });
+});
+
+app.put('/clienteadeuda/:idCliente', verificaToken, (req, res) => {
+    let id = req.params.idCliente;
+    let body = req.body;
+
+    Cliente.findById(id, (err, clienteDB) => {
+
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+
+        if (!clienteDB) {
+            return res.status(404).json({
+                ok: false,
+                err: {
+                    message: 'El ciente no existe'
+                }
+            });
+        }
+        let adeudaNueva = parseFloat(clienteDB.adeuda) - parseFloat(body.adeudaCliente);
+        if (adeudaNueva < 0) {
+            return res.status(400).json({
+                ok: false,
+                err: 'El abono no puede ser mayor a la deuda'
+            });
+        }
+
+        clienteDB.adeuda = adeudaNueva;
+
+        clienteDB.save((err, clienteGuardado) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    err
+                });
+            }
+
+            res.json({
+                ok: true,
+                clienteGuardado
+            });
+        });
+
+    });
+});
 
 // // ========================================
 // // Borra Clientes por ID

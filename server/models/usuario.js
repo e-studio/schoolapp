@@ -21,13 +21,17 @@ let usuarioSchema = new Schema({
         unique: true,
         required: [true, 'El correo es necesario']
     },
+    telefono: {
+        type: String,
+        default: ''
+    },
     password: {
         type: String,
         required: [true, 'La contraseña es obligatoria']
     },
     img: {
         type: String,
-        required: false
+        default: 'uploads/default.jpg'
     },
     role: {
         type: String,
@@ -55,7 +59,7 @@ usuarioSchema.methods.toJSON = function() {
     delete userObject.password;
 
     return userObject;
-}
+};
 
 
 usuarioSchema.plugin(uniqueValidator, { message: '{PATH} debe de ser único' });
